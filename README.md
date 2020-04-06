@@ -1,8 +1,12 @@
 # ornstein-uhlenbeck
 
-Estimate the parameters of an Ornstein-Uhlenbeck stochastic process using
-maximum likelihood for eta (the attraction parameter) and iterative updating for
-mu and sigma.
+Estimate the parameters of an Ornstein-Uhlenbeck stochastic process (also known
+as a Vasicek model) using maximum likelihood for eta (the attraction parameter)
+and iterative updating for mu and sigma.
+
+The stochastic equation is:
+dX = - eta * (X - mu) * dt + sigma * dW
+where W is a Wigner process.
 
 ## Usage
 
