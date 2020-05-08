@@ -22,6 +22,7 @@ correction is small.
 from typing import List, Tuple, Optional
 import logging
 import numpy as np
+from nptyping import NDArray
 import scipy.optimize as opt
 
 
@@ -31,7 +32,7 @@ class OrnsteinUhlenbeckEstimator:
     sets of series.
     """
 
-    def __init__(self, data: List[Tuple[np.array, np.array]], **kwargs):
+    def __init__(self, data: List[Tuple[NDArray[float], NDArray[float]]], **kwargs):
         """
         Initialize the class.
         data: List of tuples of (t, x) arrays
@@ -105,8 +106,8 @@ class OrnsteinUhlenbeckEstimator:
         return 2.0 * self.eta * self.variance
 
     def deviations(
-        self, data: Optional[List[Tuple[np.array, np.array]]] = None
-    ) -> np.array:
+        self, data: Optional[List[Tuple[NDArray[float], NDArray[float]]]] = None
+    ) -> NDArray[float]:
         """
         Returns the weighted deviations at each point.
         """
@@ -116,7 +117,7 @@ class OrnsteinUhlenbeckEstimator:
         )
 
 
-def eta_start(t: np.array, x: np.array) -> float:
+def eta_start(t: NDArray[float], x: NDArray[float]) -> float:
     """
     Returns a guesstimate of eta (totally unverified). This probably only holds
     for equally-spaced steps. But it provides a reasonable start value around an
@@ -131,7 +132,9 @@ def eta_start(t: np.array, x: np.array) -> float:
     return eta
 
 
-def likelihood(t: np.array, x: np.array, eta: float, mu: float = 0.0) -> float:
+def likelihood(
+    t: NDArray[float], x: NDArray[float], eta: float, mu: float = 0.0
+) -> float:
     """
     Returns the likelihood where sigma^2 has been replace by its MLE estimator
     as a function of eta and mu. It diverges if eta == 0.
@@ -147,7 +150,9 @@ def likelihood(t: np.array, x: np.array, eta: float, mu: float = 0.0) -> float:
     )
 
 
-def deta_likelihood(t: np.array, x: np.array, eta: float, mu: float = 0.0) -> float:
+def deta_likelihood(
+    t: NDArray[float], x: NDArray[float], eta: float, mu: float = 0.0
+) -> float:
     """
     The gradient of the total likelihood with respect to eta.
     """
@@ -160,7 +165,7 @@ def deta_likelihood(t: np.array, x: np.array, eta: float, mu: float = 0.0) -> fl
     return -0.5 * nm1 * deta_dev / dev + np.sum(dt * exp_2etadt / expm1_2etadt)
 
 
-def opt_eta(t: np.array, x: np.array, mu: float = 0.0) -> float:
+def opt_eta(t: NDArray[float], x: NDArray[float], mu: float = 0.0) -> float:
     """
     Return the eta parameter estimated by maximum likelihood.
     """
@@ -180,7 +185,9 @@ def opt_eta(t: np.array, x: np.array, mu: float = 0.0) -> float:
     return fit.x
 
 
-def deviations(t: np.array, x: np.array, eta: float, mu: float = 0.0) -> np.array:
+def deviations(
+    t: NDArray[float], x: NDArray[float], eta: float, mu: float = 0.0
+) -> NDArray[float]:
     """
     Returns the appropriately-weighted unsigned deviations i.e. the difference
     from predicted divided by the standard deviation.
@@ -195,7 +202,9 @@ def deviations(t: np.array, x: np.array, eta: float, mu: float = 0.0) -> np.arra
     return xn - xp * np.exp(-eta * dt) / np.sqrt(-np.expm1(-2.0 * eta * dt))
 
 
-def variance(t: np.array, x: np.array, eta: float, mu: float = 0.0) -> float:
+def variance(
+    t: NDArray[float], x: NDArray[float], eta: float, mu: float = 0.0
+) -> float:
     """
     Returns an analogue of the weighted average of squares.
     D = (1/(n-1)) * sum { [(x_t - mu) - (x_{t-1} - mu)*exp(-eta*dt)] / (1 - exp(-2*eta*dt)) }
@@ -212,7 +221,9 @@ def variance(t: np.array, x: np.array, eta: float, mu: float = 0.0) -> float:
     )
 
 
-def deta_variance(t: np.array, x: np.array, eta: float, mu: float = 0.0) -> float:
+def deta_variance(
+    t: NDArray[float], x: NDArray[float], eta: float, mu: float = 0.0
+) -> float:
     """
     Returns the derivative of the `variance` function with respect to eta.
     WARNING: there seem to be numerical issues at small eta, and eta will be small.
@@ -234,7 +245,7 @@ def deta_variance(t: np.array, x: np.array, eta: float, mu: float = 0.0) -> floa
     return terms.mean()
 
 
-def mu(t: np.array, x: np.array, eta: float) -> float:
+def mu(t: NDArray[float], x: NDArray[float], eta: float) -> float:
     """
     Returns the appropriately weighted mu given eta.
     """
@@ -242,7 +253,7 @@ def mu(t: np.array, x: np.array, eta: float) -> float:
     return num / den
 
 
-def mu_list(data: List[Tuple[np.array, np.array]], eta) -> float:
+def mu_list(data: List[Tuple[NDArray[float], NDArray[float]]], eta) -> float:
     """
     Returns the mu for a collection of samplings, properly weighting all together.
     """
@@ -250,7 +261,7 @@ def mu_list(data: List[Tuple[np.array, np.array]], eta) -> float:
     return np.sum(nums) / np.sum(dens)
 
 
-def _mu_one(t: np.array, x: np.array, eta: float) -> float:
+def _mu_one(t: NDArray[float], x: NDArray[float], eta: float) -> float:
     """
     Returns the numerator and denominator of an appropriately weighted mu given
     eta for a single t, x set
